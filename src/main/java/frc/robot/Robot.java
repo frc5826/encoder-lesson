@@ -89,6 +89,7 @@ public class Robot extends TimedRobot
         if(count++ % 25 == 0) {
             System.out.println("Angle: " + TEST_ANGLE);
             System.out.println("Current Pos: " + talon.getSelectedSensorPosition(0));
+            System.out.println("Current PWM Pos: " + talon.getSensorCollection().getPulseWidthPosition());
             System.out.println("Desired Pos: " + percentToPulse(TEST_ANGLE));
             System.out.println("Current Error: " + talon.getClosedLoopError());
             System.out.println();
