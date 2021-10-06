@@ -5,6 +5,9 @@
 
 package frc.robot;
 
+import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import edu.wpi.first.wpilibj.TimedRobot;
 
 /**
@@ -34,6 +37,20 @@ import edu.wpi.first.wpilibj.TimedRobot;
  */
 public class Robot extends TimedRobot
 {
+
+    private WPI_TalonSRX talon;
+
+    private final int TALON_PID = 2;
+    private final double GEAR_RATIO = 5;
+    private final double PULSE_PER_ROT = 4506;
+    private final int PID_IDX = 0;
+    private final int TIMEOUT_MS = 1000;
+    private final double ZERO_POS = 14500.0;
+
+    private int TEST_ANGLE = 0;
+    private int count = 0;
+
+
     /**
      * This method is run when the robot is first started up and should be used for any
      * initialization code.
@@ -41,60 +58,60 @@ public class Robot extends TimedRobot
     @Override
     public void robotInit()
     {
+        talon = new WPI_TalonSRX(TALON_PID);
+        talon.configFactoryDefault(TIMEOUT_MS);
+        talon.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, PID_IDX, TIMEOUT_MS);
+        talon.setSensorPhase(true);
+        talon.configAllowableClosedloopError(0, PID_IDX, TIMEOUT_MS);
 
-    }
+        talon.config_kF(PID_IDX, 0.0, TIMEOUT_MS);
+        talon.config_kP(PID_IDX, 0.75, TIMEOUT_MS);
+        talon.config_kI(PID_IDX, 0.0, TIMEOUT_MS);
+        talon.config_kD(PID_IDX, 0.5, TIMEOUT_MS);
 
-    @Override
-    public void robotPeriodic()
-    {
-
-    }
-
-    @Override
-    public void autonomousInit()
-    {
-
-    }
-
-    @Override
-    public void autonomousPeriodic()
-    {
-        
+        //Going to 100% makes the power supply unhappy
+        talon.configNominalOutputForward(0, TIMEOUT_MS);
+        talon.configNominalOutputReverse(0, TIMEOUT_MS);
+        talon.configPeakOutputForward(0.5, TIMEOUT_MS);
+        talon.configPeakOutputReverse(-0.5, TIMEOUT_MS);
     }
 
     @Override
     public void teleopInit()
     {
-        
+        System.out.println("Start Pos: " + talon.getSelectedSensorPosition(0));
     }
 
     @Override
     public void teleopPeriodic()
     {
-        
+        if(count++ % 25 == 0) {
+            System.out.println("Angle: " + TEST_ANGLE);
+            System.out.println("Current Pos: " + talon.getSelectedSensorPosition(0));
+            System.out.println("Desired Pos: " + percentToPulse(TEST_ANGLE));
+            System.out.println("Current Error: " + talon.getClosedLoopError());
+            System.out.println();
+        }
+
+        talon.set(ControlMode.Position, percentToPulse(TEST_ANGLE));
     }
 
     @Override
     public void disabledInit()
     {
-
+        System.out.println("Final Pos: " + talon.getSelectedSensorPosition(0));
     }
 
-    @Override
-    public void disabledPeriodic()
-    {
-
+    // "Percent" refers to the percent of the total rotation
+    // 1.0 -> 360 degrees, 0.5 -> 180 degrees, -0.25 -> -90 degrees
+    // Eventually we'll convert to degrees (% * 360) or radians (% * 2π)
+    private double pulsesToPercent(double reading){
+        double convertRatio = PULSE_PER_ROT * GEAR_RATIO;
+        return ((reading - ZERO_POS) % convertRatio) / convertRatio;
     }
 
-    @Override
-    public void testInit()
-    {
-        
-    }
-
-    @Override
-    public void testPeriodic()
-    {
-        
+    private double percentToPulse(double percent){
+        double convertRatio = PULSE_PER_ROT * GEAR_RATIO;
+        return (percent * convertRatio) + ZERO_POS;
     }
 }
