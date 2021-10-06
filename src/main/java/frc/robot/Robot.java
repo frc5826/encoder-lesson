@@ -46,9 +46,9 @@ public class Robot extends TimedRobot
     private final double PULSE_PER_ROT = 4300;
     private final int PID_IDX = 0;
     private final int TIMEOUT_MS = 1000;
-    private final double ZERO_POS = 0;
+    private double ZERO_POS = 0;
 
-    private double TEST_ANGLE = 0.0;
+    private double TEST_ANGLE = 0.5;
     private int count = 0;
 
 
@@ -86,16 +86,31 @@ public class Robot extends TimedRobot
     @Override
     public void teleopPeriodic()
     {
-        if(count++ % 25 == 0) {
-            System.out.println("Angle: " + TEST_ANGLE);
+        //Dumb PID to see if getPulseWidthRiseToFallUs gives us an absolute value.
+        //Tried to find 0 with a deadband
+        int deadband = 100;
+        double pw_pos = talon.getSensorCollection().getPulseWidthRiseToFallUs();
+        if(pw_pos > (deadband / 2) && pw_pos <= 4096/2){
+            talon.set(.1);
+        }
+        else if(pw_pos > 4096/2 && pw_pos < (4096 - (deadband / 2))){
+            talon.set(-.1);
+        }
+        else {
+            talon.set(0);
+        }
+
+        if(count++ % 20 == 0) {
+            System.out.println("Test Angle: " + TEST_ANGLE);
             System.out.println("Current Pos: " + talon.getSelectedSensorPosition(0));
             System.out.println("Current PWM Pos: " + talon.getSensorCollection().getPulseWidthPosition());
+            System.out.println("Current PWM (Rise to Fall) Pos: " + talon.getSensorCollection().getPulseWidthRiseToFallUs());
+            System.out.println("Current PWM (Rise to Rise) Pos: " + talon.getSensorCollection().getPulseWidthRiseToRiseUs());
+            System.out.println("Current PWM Velo: " + talon.getSensorCollection().getPulseWidthVelocity());
             System.out.println("Desired Pos: " + percentToPulse(TEST_ANGLE));
             System.out.println("Current Error: " + talon.getClosedLoopError());
             System.out.println();
         }
-
-        talon.set(ControlMode.Position, percentToPulse(TEST_ANGLE));
     }
 
     @Override
