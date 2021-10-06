@@ -42,12 +42,13 @@ public class Robot extends TimedRobot
 
     private final int TALON_PID = 2;
     private final double GEAR_RATIO = 5;
-    private final double PULSE_PER_ROT = 4506;
+    //Spec says 4096 - This gave me more accurate results
+    private final double PULSE_PER_ROT = 4300;
     private final int PID_IDX = 0;
     private final int TIMEOUT_MS = 1000;
-    private final double ZERO_POS = 14500.0;
+    private final double ZERO_POS = 0;
 
-    private int TEST_ANGLE = 0;
+    private double TEST_ANGLE = 0.0;
     private int count = 0;
 
 
