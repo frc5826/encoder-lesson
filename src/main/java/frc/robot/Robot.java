@@ -64,7 +64,7 @@ public class Robot extends TimedRobot
             System.out.println("Current Pos: " + currentPosition);
             System.out.println();
         }
-
+        
         /**
          * TODO #2
          * Once you have found the ZERO_POS value, you can start to use the percentToPulse/pulsesToPercent methods. Read the notes below to understand how that works.
